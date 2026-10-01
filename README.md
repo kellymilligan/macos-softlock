@@ -7,7 +7,7 @@ It is **not** a security feature. Anyone can unlock it from the menu bar icon.
 ## Features
 
 - **Lock / Unlock**: blocks all keyboard input (including media/volume/brightness keys), clicks, scrolling and trackpad gestures. The pointer still moves. Clicks on the SoftLock menu bar icon and its menu still work, so you unlock by clicking the icon and choosing **Unlock**.
-- **Dim Screen While Locked** (on by default): darkens every screen by 50% while locked, except the SoftLock icon, so it's obvious the Mac is locked when you sit back down.
+- **Blur Screen While Locked** (on by default): lightly blurs every screen while locked, except the SoftLock icon, so it's obvious the Mac is locked when you sit back down.
 - **Keep Awake**: stops the display and system from idle-sleeping (like `caffeinate -d`).
 - **Keep Awake While Locked** (on by default): keeps the Mac awake only while it's locked, so the screensaver or a real lock doesn't start while you're away.
 - **Open at Login**
@@ -32,7 +32,7 @@ Each push also builds the app on GitHub Actions and uploads it as a `SoftLock` a
 
 ## How it works
 
-SoftLock installs a `CGEventTap` at the HID level. The tap drops key, click, scroll and gesture events unless the pointer is over one of SoftLock's own windows: the status item or its open menu. Keep Awake holds an IOKit `PreventUserIdleDisplaySleep` power assertion.
+SoftLock installs a `CGEventTap` at the HID level. The tap drops key, click, scroll and gesture events unless the pointer is over one of SoftLock's own windows: the status item or its open menu. The blur uses click-through overlay windows with the private `CGSSetWindowBackgroundBlurRadius` call (as iTerm2 does) to set a light radius. If that call is ever unavailable, it falls back to a standard, stronger `NSVisualEffectView` blur. Keep Awake holds an IOKit `PreventUserIdleDisplaySleep` power assertion.
 
 ## Limitations
 

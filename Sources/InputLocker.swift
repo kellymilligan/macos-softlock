@@ -15,7 +15,7 @@ final class InputLocker {
     /// should always receive pointer events, e.g. the status item button.
     var isAllowedPoint: ((CGPoint) -> Bool)?
 
-    /// SoftLock windows that must not let clicks through, e.g. the dimming
+    /// SoftLock windows that must not let clicks through, e.g. the blur
     /// overlay, which sits under every point on screen.
     var isIgnoredWindow: ((Int) -> Bool)?
 

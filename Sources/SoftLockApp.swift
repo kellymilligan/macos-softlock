@@ -19,12 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private enum Key {
         static let keepAwake = "keepAwake"
         static let keepAwakeWhileLocked = "keepAwakeWhileLocked"
-        static let dimWhileLocked = "dimWhileLocked"
+        static let blurWhileLocked = "blurWhileLocked"
     }
 
     private let locker = InputLocker()
     private let awake = AwakeAssertion()
-    private let dimmer = ScreenDimmer()
+    private let blur = ScreenBlur()
     private let defaults = UserDefaults.standard
 
     private var statusItem: NSStatusItem!
@@ -32,7 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let lockItem = NSMenuItem(title: "", action: #selector(toggleLock), keyEquivalent: "")
     private let keepAwakeItem = NSMenuItem(title: "Keep Awake", action: #selector(toggleKeepAwake), keyEquivalent: "")
     private let keepAwakeLockedItem = NSMenuItem(title: "Keep Awake While Locked", action: #selector(toggleKeepAwakeWhileLocked), keyEquivalent: "")
-    private let dimItem = NSMenuItem(title: "Dim Screen While Locked", action: #selector(toggleDimWhileLocked), keyEquivalent: "")
+    private let blurItem = NSMenuItem(title: "Blur Screen While Locked", action: #selector(toggleBlurWhileLocked), keyEquivalent: "")
     private let loginItem = NSMenuItem(title: "Open at Login", action: #selector(toggleOpenAtLogin), keyEquivalent: "")
     private let accessibilityItem = NSMenuItem(title: "", action: #selector(openAccessibilitySettings), keyEquivalent: "")
     private let quitItem = NSMenuItem(title: "Quit SoftLock", action: #selector(quit), keyEquivalent: "q")
@@ -47,13 +47,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         set { defaults.set(newValue, forKey: Key.keepAwakeWhileLocked) }
     }
 
-    private var dimWhileLocked: Bool {
-        get { defaults.bool(forKey: Key.dimWhileLocked) }
-        set { defaults.set(newValue, forKey: Key.dimWhileLocked) }
+    private var blurWhileLocked: Bool {
+        get { defaults.bool(forKey: Key.blurWhileLocked) }
+        set { defaults.set(newValue, forKey: Key.blurWhileLocked) }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        defaults.register(defaults: [Key.keepAwake: false, Key.keepAwakeWhileLocked: true, Key.dimWhileLocked: true])
+        defaults.register(defaults: [Key.keepAwake: false, Key.keepAwakeWhileLocked: true, Key.blurWhileLocked: true])
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
@@ -61,13 +61,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
         statusLine.isEnabled = false
-        for item in [lockItem, dimItem, keepAwakeItem, keepAwakeLockedItem, loginItem, accessibilityItem, quitItem] {
+        for item in [lockItem, blurItem, keepAwakeItem, keepAwakeLockedItem, loginItem, accessibilityItem, quitItem] {
             item.target = self
         }
         menu.addItem(statusLine)
         menu.addItem(lockItem)
         menu.addItem(.separator())
-        menu.addItem(dimItem)
+        menu.addItem(blurItem)
         menu.addItem(keepAwakeItem)
         menu.addItem(keepAwakeLockedItem)
         menu.addItem(loginItem)
@@ -80,10 +80,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.statusItemContains(point) ?? false
         }
         locker.isIgnoredWindow = { [weak self] number in
-            self?.dimmer.contains(windowNumber: number) ?? false
+            self?.blur.contains(windowNumber: number) ?? false
         }
 
-        dimmer.holeRect = { [weak self] in
+        blur.holeRect = { [weak self] in
             self?.statusItem.button?.window?.frame
         }
         if let statusWindow = statusItem.button?.window {
@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         locker.unlock()
-        dimmer.hide()
+        blur.hide()
         awake.set(false)
     }
 
@@ -121,13 +121,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refresh()
     }
 
-    @objc private func toggleDimWhileLocked() {
-        dimWhileLocked.toggle()
+    @objc private func toggleBlurWhileLocked() {
+        blurWhileLocked.toggle()
         refresh()
     }
 
     @objc private func statusItemMoved() {
-        dimmer.updateHole()
+        blur.updateHole()
     }
 
     @objc private func toggleKeepAwake() {
@@ -201,10 +201,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let locked = locker.isLocked
 
         awake.set(keepAwake || (locked && keepAwakeWhileLocked))
-        if locked && dimWhileLocked {
-            dimmer.show()
+        if locked && blurWhileLocked {
+            blur.show()
         } else {
-            dimmer.hide()
+            blur.hide()
         }
 
         let symbol = locked ? "lock.fill" : "lock.open"
@@ -214,7 +214,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         statusLine.title = locked ? "Locked — keyboard & mouse blocked" : "Unlocked"
         lockItem.title = locked ? "Unlock" : "Lock"
-        dimItem.state = dimWhileLocked ? .on : .off
+        blurItem.state = blurWhileLocked ? .on : .off
         keepAwakeItem.state = keepAwake ? .on : .off
         keepAwakeLockedItem.state = keepAwakeWhileLocked ? .on : .off
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
