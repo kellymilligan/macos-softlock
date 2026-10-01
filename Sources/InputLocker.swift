@@ -15,6 +15,10 @@ final class InputLocker {
     /// should always receive pointer events, e.g. the status item button.
     var isAllowedPoint: ((CGPoint) -> Bool)?
 
+    /// SoftLock windows that must not let clicks through, e.g. the dimming
+    /// overlay, which sits under every point on screen.
+    var isIgnoredWindow: ((Int) -> Bool)?
+
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
@@ -116,6 +120,7 @@ final class InputLocker {
         let cocoaPoint = NSPoint(x: point.x, y: primary.frame.maxY - point.y)
         let number = NSWindow.windowNumber(at: cocoaPoint, belowWindowWithWindowNumber: 0)
         guard number > 0,
+              isIgnoredWindow?(number) != true,
               let info = CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(number)) as? [[String: Any]],
               let pid = info.first?[kCGWindowOwnerPID as String] as? Int
         else { return false }

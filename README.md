@@ -7,6 +7,7 @@ It is **not** a security feature. Anyone can unlock it from the menu bar icon.
 ## Features
 
 - **Lock / Unlock**: blocks all keyboard input (including media/volume/brightness keys), clicks, scrolling and trackpad gestures. The pointer still moves. Clicks on the SoftLock menu bar icon and its menu still work, so you unlock by clicking the icon and choosing **Unlock**.
+- **Dim Screen While Locked** (on by default): darkens every screen by 50% while locked, except the SoftLock icon, so it's obvious the Mac is locked when you sit back down.
 - **Keep Awake**: stops the display and system from idle-sleeping (like `caffeinate -d`).
 - **Keep Awake While Locked** (on by default): keeps the Mac awake only while it's locked, so the screensaver or a real lock doesn't start while you're away.
 - **Open at Login**
