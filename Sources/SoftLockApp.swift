@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let keepAwakeLockedItem = NSMenuItem(title: "Keep Awake While Locked", action: #selector(toggleKeepAwakeWhileLocked), keyEquivalent: "")
     private let dimItem = NSMenuItem(title: "Dim Screen While Locked", action: #selector(toggleDimWhileLocked), keyEquivalent: "")
     private let loginItem = NSMenuItem(title: "Open at Login", action: #selector(toggleOpenAtLogin), keyEquivalent: "")
+    private let accessibilityItem = NSMenuItem(title: "", action: #selector(openAccessibilitySettings), keyEquivalent: "")
     private let quitItem = NSMenuItem(title: "Quit SoftLock", action: #selector(quit), keyEquivalent: "q")
 
     private var keepAwake: Bool {
@@ -60,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
         statusLine.isEnabled = false
-        for item in [lockItem, dimItem, keepAwakeItem, keepAwakeLockedItem, loginItem, quitItem] {
+        for item in [lockItem, dimItem, keepAwakeItem, keepAwakeLockedItem, loginItem, accessibilityItem, quitItem] {
             item.target = self
         }
         menu.addItem(statusLine)
@@ -71,6 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(keepAwakeLockedItem)
         menu.addItem(loginItem)
         menu.addItem(.separator())
+        menu.addItem(accessibilityItem)
         menu.addItem(quitItem)
         statusItem.menu = menu
 
@@ -158,6 +160,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refresh()
     }
 
+    @objc private func openAccessibilitySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     @objc private func quit() {
         NSApp.terminate(nil)
     }
@@ -182,8 +190,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             message: "To block the keyboard and mouse, enable SoftLock in System Settings → Privacy & Security → Accessibility, then choose Lock again.",
             buttons: ["Open Settings", "Cancel"]
         ) == .alertFirstButtonReturn
-        if open, let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-            NSWorkspace.shared.open(url)
+        if open {
+            openAccessibilitySettings()
         }
     }
 
@@ -210,8 +218,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         keepAwakeItem.state = keepAwake ? .on : .off
         keepAwakeLockedItem.state = keepAwakeWhileLocked ? .on : .off
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        accessibilityItem.title = AXIsProcessTrusted() ? "Accessibility Settings…" : "Allow Accessibility Access…"
         // Unlock should be the only way out while locked.
         quitItem.isEnabled = !locked
+        // Settings can't be clicked while input is blocked.
+        accessibilityItem.isEnabled = !locked
     }
 
     /// Whether `point` (global CG coordinates, top-left origin) is over the status item.

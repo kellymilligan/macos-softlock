@@ -11,8 +11,9 @@ It is **not** a security feature. Anyone can unlock it from the menu bar icon.
 - **Keep Awake**: stops the display and system from idle-sleeping (like `caffeinate -d`).
 - **Keep Awake While Locked** (on by default): keeps the Mac awake only while it's locked, so the screensaver or a real lock doesn't start while you're away.
 - **Open at Login**
+- **Accessibility Settings…**: opens System Settings → Privacy & Security → Accessibility, where you allow or remove SoftLock. Reads **Allow Accessibility Access…** when SoftLock doesn't have permission yet.
 
-While locked, the icon becomes a filled padlock and **Quit** is disabled.
+While locked, the icon becomes a filled padlock, and **Quit** and **Accessibility Settings…** are disabled.
 
 ## Build & install
 
